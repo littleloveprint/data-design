@@ -20,8 +20,6 @@
 				<li>profileUserName</li>
 				<li>profileLocation</li>
 				<li>profileJoinDate</li>
-				<li>profileAbout</li>
-				<li>profileFavoriteItems</li>
 			</ul>
 			<h3>Product</h3>
 			<ul>
@@ -41,9 +39,7 @@
 
 			<h2>Relationships</h2>
 			<ul>
-				<li>One profile can favorite many products.</li>
 				<li>Many profiles can favorite many products.</li>
-				<li>Many products can be favorited many times.</li>
 			</ul>
 		</main>
 	</body>
