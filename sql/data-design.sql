@@ -39,7 +39,7 @@ CREATE TABLE `favorite` (
 		favoriteProfileId INT UNSIGNED NOT NULL,
 		favoriteProductId INT UNSIGNED NOT NULL,
 		favoriteDate DATETIME(6) NOT NULL,
-		-- ^ These are not auto_increment because they're still foreign keys
+		-- ^ These are not auto_increment because they're still foreign keys.
 		INDEX(favoriteProfileId),
 		INDEX(favoriteProductId),
 	-- ^ Index the foreign keys.
