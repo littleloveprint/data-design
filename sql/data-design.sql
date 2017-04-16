@@ -24,7 +24,7 @@ CREATE TABLE product (
 		productId INT UNSIGNED AUTO_INCREMENT NOT NULL,
 		productProfileId INT UNSIGNED NOT NULL,
 		productDescription VARCHAR(1000) NOT NULL,
-		productPrice VARCHAR(12) NOT NULL,
+		productPrice DECIMAL(11,2) NOT NULL,
 		productPostDate DATETIME(6) NOT NULL,
 		INDEX(productProfileId),
 	-- ^ This creates an index before making a foreign key.
