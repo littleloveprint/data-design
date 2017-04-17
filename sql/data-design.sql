@@ -4,9 +4,9 @@ DROP TABLE IF EXISTS 'profile';
 
 -- The profile entity.
 CREATE TABLE profile (
-		-- this creates the attribute for the primary key
-		-- auto_increment tells mySQL to number them {1, 2, 3, ...}
-		-- not null means the attribute is required!
+		-- This creates the attribute for the primary key.
+		-- Auto_increment tells mySQL to number them {1, 2, 3, ...}
+		-- Not null means the attribute is required!
 		profileId INT UNSIGNED AUTO_INCREMENT NOT NULL,
 		-- ^ Primary Key ^
 		profileUserName VARCHAR(32) NOT NULL,
