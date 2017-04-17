@@ -37,6 +37,7 @@
 			<h2>Relationships</h2>
 			<ul>
 				<li>Many profiles can favorite many products.</li>
+				<li>One product can be favorited many times.</li>
 			</ul>
 			<p><strong>Subject: </strong>Courtney Thompson<br><strong>Verb: </strong>Favorites<br><strong>Object: </strong>Coozies</p>
 			<p><img src="img/erd.svg" alt="ERD" /></p>
