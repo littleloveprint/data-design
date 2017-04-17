@@ -46,6 +46,6 @@ CREATE TABLE `favorite` (
 		FOREIGN KEY(favoriteProfileId) REFERENCES profile(profileId),
 		FOREIGN KEY(favoriteProductId) REFERENCES product(productId),
 	-- ^ Create the foreign key relations.
-		PRIMARY KEY(favoriteProductId, favoriteProductId)
+		PRIMARY KEY(favoriteProfileId, favoriteProductId)
 	-- ^ Finally, create a composite foreign key with the two foreign keys.
 );
