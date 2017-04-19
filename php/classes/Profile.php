@@ -1,16 +1,14 @@
 <?php
-
 //namespace Edu\Cnm\DataDesign;
 require_once("autoload.php");
-
 /**
- * <h1>Small Cross Section of an Etsy favorite Product.
+ * Small Cross Section of an Etsy favorite Product.
  *
- *<p>This product can be considered a small example of what services like Etsy store when messages are sent and received using Etsy.
- * This can easily be extended to emulate more features of Etsy.</p>
- *<br>
- * <p>@author Lea McDuffie <littleloveprint@gmail.com>
- * @version 1</p>
+ *This product can be considered a small example of what services like Etsy store when messages are sent and received using Etsy.
+ * This can easily be extended to emulate more features of Etsy.
+ *
+ * @author Lea McDuffie <littleloveprint@gmail.com>
+ * @version 1
  **/
 class Product {
 	use ValidateDate;
@@ -34,7 +32,6 @@ class Product {
 	 * @var \DateTime $productPostDate
 	 **/
 	private $productPostDate;
-
 	/**
 	 * Constructor for this Product.
 	 *
@@ -54,13 +51,13 @@ class Product {
 			$this->setProductProfileId($newProductProfileId);
 			$this->setProductDescription($newProductDescription);
 			$this->setProductPostDate($newProductPostDate);
-		} //determine what exception type was thrown
+		}
+			//determine what exception type was thrown
 		catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
 			$exceptionType = get_class($exception);
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
 		}
 	}
-
 	/**
 	 * Accessor method for product id.
 	 *
@@ -69,7 +66,6 @@ class Product {
 	public function getProductId(): ?int {
 		return ($this->productId);
 	}
-
 	/**
 	 * Mutator method for product id.
 	 *
@@ -90,7 +86,6 @@ class Product {
 		// Convert and store the product id.
 		$this->productId = $newProductId;
 	}
-
 	/**
 	 * Accessor method for product profile id.
 	 *
@@ -99,7 +94,6 @@ class Product {
 	public function getProductProfileId(): int {
 		return ($this->productProfileId);
 	}
-
 	/**
 	 * Mutator method for product profile id.
 	 *
@@ -115,7 +109,6 @@ class Product {
 		// Convert and store the profile id
 		$this->productProfileId = $newProductProfileId;
 	}
-
 	/**
 	 * Accessor method for product description.
 	 *
@@ -124,7 +117,6 @@ class Product {
 	public function getProductDescription(): string {
 		return ($this->productDescription);
 	}
-
 	/**
 	 * Mutator method for product content.
 	 *
@@ -147,7 +139,6 @@ class Product {
 		// Store the product description.
 		$this->productDescription = $newProductDescription;
 	}
-
 	/**
 	 * Accessor method for product post date
 	 *
@@ -156,7 +147,6 @@ class Product {
 	public function getProductPostDate(): \DateTime {
 		return ($this->productPostDate);
 	}
-
 	/**
 	 * Mutator method for product post date.
 	 *
@@ -179,7 +169,6 @@ class Product {
 		}
 		$this->productPostDate = $newProductPostDate;
 	}
-
 	/**
 	 * Inserts this product into mySQL.
 	 *
@@ -201,5 +190,116 @@ class Product {
 		$statement->execute($parameters);
 		// Update the null productId with what mySQL just gave us.
 		$this->productId = intval($pdo->lastInsertId());
+	}
+	/**
+	 * Deletes this product from mySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function delete(\PDO $pdo) : void {
+		// Enforce the productId is not null (i.e. don't delete a product that hasn't been inserted).
+		if($this->productId === null) {
+			throw(new \PDOException("unable to delete a product that doesn't exist"));
+		}
+		// Create query template.
+		$query = "DELETE FROM product WHERE productId = :productId";
+		$statement = $pdo->prepare($query);
+		// Bind the member variables to the place holder in the template.
+		$parameters = ["productId" => $this->productId];
+		$statement->execute($parameters);
+	}
+	/**
+	 * Updates this product in mySQL.
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+	public function update(\PDO $pdo) : void {
+		// Enforce the productId is not null (i.e. don't update a product that hasn't been inserted).
+		if($this->productId === null) {
+			throw(new \PDOException("unable to update a product that does not exist"));
+		}
+		// Create query template.
+		$query = "UPDATE product SET productProfileId = :productProfileId, productDescription = :productDescription, productPostDate = :productPostDate WHERE productId = :productId";
+		$statement = $pdo->prepare($query);
+		// Bind the member variables to the place holders in the template.
+		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
+		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productId];
+		$statement->execute($parameters);
+	}
+	/**
+	 * Gets the product by content.
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @param string $productDescription product content to search for
+	 * @return \SplFixedArray SplFixedArray of products found
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError when variables are not the correct data type
+	 **/
+	public static function getProductByProductDescription(\PDO $pdo, string $productDescription) {
+		// Sanatize the description before searching
+		$productDescription = trim($productDescription);
+		$productDescription = filter_var($productDescription, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($productDescription) === true) {
+			throw(new \PDOException("product description invalid"));
+		}
+		// Create query template.
+		$query = "SELECT productId, productProfileId, productDescription, productPostDate FROM product WHERE productDescription LIKE :productDescription";
+		$statement = $pdo->prepare($query);
+		// Bind the product description to the place holder in the template.
+		$productDescription = "%productDescription%";
+		$parameters = ["productDescription" => $productDescription];
+		$statement->execute($parameters);
+		// Build an array of products.
+		$products = new \SplFixedArray($statement->rowCount());
+		$statement->setFetchMode(\PDO::FETCH_ASSOC);
+		while(($row = $statement->fetch()) !== false) {
+			try {
+				$product = new Product($row["productId"], $row["productPostDate"]);
+				$products[$products->key()] = $product;
+				$products->next();
+			} catch(\Exception $exception) {
+				// If the row couldn't be converted, rethrow it.
+				throw(new \PDOException($exception->getMessage(), 0, $exception));
+				}
+			}
+			return($products);
+		}
+		/**
+		 * Gets the Product by productId.
+		 *
+		 * @param \PDO $pdo PDO connection object
+		 * @param int $productId product id to search for
+		 * @return Product|null Product found or null if not found
+		 * @throws \PDOException when mySQL errors occur
+		 * @throws \TypeError when variables are not the correct data type
+		 **/
+		public static function getProductByProductId(\PDO $pdo, int $productId) : ?Product {
+			// Sanitize the productId before searching.
+			if($productId <= 0) {
+				throw(new \PDOException("product id is not positive"));
+			}
+			// Create query template.
+			$query = "SELECT productId, productProfileId, productDescription, productPostDate FROM product WHERE productId = :productId";
+			$statement = $pdo->prepare($query);
+			// Bind the product id to the place holder in the template.
+			$parameters = ["productId" => $productId];
+			$statement->execute($parameters);
+			// Grab the product from mySQL
+			try {
+				$product = null;
+				$statement->setFetchMode(\PDO::FETCH_ASSOC);
+				$row = $statement->fetch();
+				if($row !== false) {
+					$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPostDate"]);
+				}
+			} catch(\Exception $exception) {
+				// If the row couldn't be converted, rethrow it.
+				throw(new \PDOException($exception->getMessage(), 0, $exception));
+			}
+			return($product);
 	}
 }
