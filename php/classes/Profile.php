@@ -1,0 +1,205 @@
+<?php
+
+//namespace Edu\Cnm\DataDesign;
+require_once("autoload.php");
+
+/**
+ * <h1>Small Cross Section of an Etsy favorite Product.
+ *
+ *<p>This product can be considered a small example of what services like Etsy store when messages are sent and received using Etsy.
+ * This can easily be extended to emulate more features of Etsy.</p>
+ *<br>
+ * <p>@author Lea McDuffie <littleloveprint@gmail.com>
+ * @version 1</p>
+ **/
+class Product {
+	use ValidateDate;
+	/**
+	 * Id for this Product; this is the primary key.
+	 * @var int $productId
+	 **/
+	private $productId;
+	/**
+	 * Id of the Profile that posted this Product; this is a foreign key.
+	 * @var int $productProfileId
+	 **/
+	private $productProfileId;
+	/**
+	 * Actual textual content of this Product.
+	 * @var string $productDescription
+	 **/
+	private $productDescription;
+	/**
+	 * Date and time this Product was posted, in a PHP DateTime object.
+	 * @var \DateTime $productPostDate
+	 **/
+	private $productPostDate;
+
+	/**
+	 * Constructor for this Product.
+	 *
+	 * @param int|null $newProductId id of this Product or null if a new Product
+	 * @param int $newProductProfileId id of the Profile that posted this Product
+	 * @param string $newProductDescription string containing actual Product data
+	 * @param \DateTime|string|null $newProductPostDate date and time Product was posted or null if set to current date and time
+	 * @throws \InvalidArgumentException if data types are not valid
+	 * @throws \RangeException if data values are out of bounds (e.g., strings too long, negative integers)
+	 * @throws \TypeError if data types violate type hints
+	 * @throws \Exception if some other exception occurs
+	 * @documentation https://php.net/manual/en/language.oop5.decon.php
+	 **/
+	public function __construct(?int $newProductId, int $newProductProfileId, string $newProductDescription, $newProductPostDate = null) {
+		try {
+			$this->setProductId($newProductId);
+			$this->setProductProfileId($newProductProfileId);
+			$this->setProductDescription($newProductDescription);
+			$this->setProductPostDate($newProductPostDate);
+		} //determine what exception type was thrown
+		catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
+			$exceptionType = get_class($exception);
+			throw(new $exceptionType($exception->getMessage(), 0, $exception));
+		}
+	}
+
+	/**
+	 * Accessor method for product id.
+	 *
+	 * @return int|null value of product id
+	 **/
+	public function getProductId(): ?int {
+		return ($this->productId);
+	}
+
+	/**
+	 * Mutator method for product id.
+	 *
+	 * @param int|null $newProductId new value of product id
+	 * @throws \RangeException if $newProductId is not positive
+	 * @throws \TypeError if $newProductId is not an integer
+	 **/
+	public function setProductId(?int $newProductId): void {
+		//If product id is null immediately return it.
+		if($newProductId === null) {
+			$this->productId = null;
+			return;
+		}
+		// Verify the product id is positive.
+		if($newProductId <= 0) {
+			throw(new \RangeException("product id is not positive"));
+		}
+		// Convert and store the product id.
+		$this->productId = $newProductId;
+	}
+
+	/**
+	 * Accessor method for product profile id.
+	 *
+	 * @return int value of product profile id
+	 **/
+	public function getProductProfileId(): int {
+		return ($this->productProfileId);
+	}
+
+	/**
+	 * Mutator method for product profile id.
+	 *
+	 * @param int $newProductProfileId new value of product profile id
+	 * @throws \RangeException if $newProfileId is not positive
+	 * @throws \TypeError if $newProfileId is not an integer
+	 **/
+	public function setProductProfileId(int $newProductProfileId): void {
+		// Verify the profile id is positive.
+		if($newProductProfileId <= 0) {
+			throw(new \RangeException("product profile id is not positive"));
+		}
+		// Convert and store the profile id
+		$this->productProfileId = $newProductProfileId;
+	}
+
+	/**
+	 * Accessor method for product description.
+	 *
+	 * @return string value of product description
+	 **/
+	public function getProductDescription(): string {
+		return ($this->productDescription);
+	}
+
+	/**
+	 * Mutator method for product content.
+	 *
+	 * @param string $newProductDescription new value of product description.
+	 * @throws \InvalidArgumentException if $newProductDescription is not a string or insecure
+	 * @throws \RangeException if $newProductDescription is > 1000 characters
+	 * @throws \TypeError if $newProductDescription is not a string
+	 **/
+	public function setProductDescription(string $newProductDescription): void {
+		// Verify the product description is secure.
+		$newProductDescription = trim($newProductDescription);
+		$newProductDescription = filter_var($newProductDescription, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($newProductDescription) === true) {
+			throw(new \InvalidArgumentException("product content is empty or insecure"));
+		}
+		// Verify the product description will fit in the database.
+		if(strlen($newProductDescription) > 1000) {
+			throw(new \RangeException("product description too large"));
+		}
+		// Store the product description.
+		$this->productDescription = $newProductDescription;
+	}
+
+	/**
+	 * Accessor method for product post date
+	 *
+	 * @return \DateTime value of product post date
+	 **/
+	public function getProductPostDate(): \DateTime {
+		return ($this->productPostDate);
+	}
+
+	/**
+	 * Mutator method for product post date.
+	 *
+	 * @param \DateTime|string|null $newProductPostDate product post date as a DateTime object or string (or null to load the current time)
+	 * @throws \InvalidArgumentException if $newProductPostDate is not a valid object or string
+	 * @throws \RangeException if $newProductPostDate is a date that does not exist
+	 **/
+	public function setProductPostDate($newProductPostDate = null): void {
+		// Base case: if the date is nul, use the current date and time
+		if($newProductPostDate === null) {
+			$this->productPostDate = new \DateTime();
+			return;
+		}
+		// Store the favorite date using the ValidateDate trait.
+		try {
+			$newProductPostDate = self::validateDateTime($newProductPostDate);
+		} catch(\InvalidArgumentException | \RangeException $exception) {
+			$exceptionType = get_class($exception);
+			throw(new $exceptionType($exception->getMessage(), 0, $exception));
+		}
+		$this->productPostDate = $newProductPostDate;
+	}
+
+	/**
+	 * Inserts this product into mySQL.
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError is $pdo is not a PDO connection object
+	 **/
+	public function insert(\PDO $pdo): void {
+		// Enforce the productId is null (i.e., don't insert a product that already exists).
+		if($this->productId !== null) {
+			throw(new \PDOException("product already exists"));
+		}
+		// Create query template
+		$query = "INSERT INTO prodcut(productProfileId, productDescription, productPostDate) VALUES(:productProfileId, :productDescription, :productPostDate)";
+		$statement = $pdo->prepare($query);
+		// Bind the member variables to the place holders in the template.
+		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
+		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productDescription, "productPostDate" => $formattedDate];
+		$statement->execute($parameters);
+		// Update the null productId with what mySQL just gave us.
+		$this->productId = intval($pdo->lastInsertId());
+	}
+}
