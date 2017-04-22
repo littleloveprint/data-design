@@ -1,5 +1,5 @@
 <?php
-//namespace Edu\Cnm\DataDesign;
+namespace Edu\Cnm\DataDesign;
 require_once("autoload.php");
 /**
  * Small Cross Section of an Etsy favorite Product.
@@ -10,7 +10,7 @@ require_once("autoload.php");
  * @author Lea McDuffie <littleloveprint@gmail.com>
  * @version 1
  **/
-class Product {
+class Product implements \JsonSerializable {
 	use ValidateDate;
 	/**
 	 * Id for this Product; this is the primary key.
@@ -338,5 +338,79 @@ class Product {
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
 			}
 			return ($product);
+		}
+		/**
+		 * Gets the Product by profile id
+		 *
+		 * @param \PDO $pdo PDO connection object
+		 * @param int $productProfileId profile id to search by
+		 * @return \SplFixedArray SplFixedArray of Products found
+		 * @throws \PDOException when mySQL related errors occur
+		 * @throws \TypeError when variables are not the correct data type
+		 **/
+		public static function getProductByProductProfileId(\PDO $pdo, int $productProfileId) : \SplFixedArray {
+			// Sanitize the profile id before searching
+			if($productProfileId <= 0) {
+				throw(new \RangeException("product profile id must be positive"));
+			}
+			// Create query template
+			$query = "SELECT productId, productProfileId, productContent, productPostDate FROM product WHERE productProfileId = :productProfileId";
+			$statement = $pdo->prepare($query);
+			// Bind the product profile id to the place holder in the template.
+			$parameters = ["productProfileId" => $productProfileId];
+			$statement->execute($parameters);
+			// Build an array of products.
+			$products = new \SplFixedArray($statement->rowCount());
+			$statement->setFetchMode(\PDO::FETCH_ASSOC);
+			while(($row = $statement->fetch()) !== false) {
+				try {
+					$product = new Product($row["productId"], $row["productProfileId	"], $row["productContent"], $row["productPostDate"]);
+					$products[$products->key()] = $product;
+					$products->next();
+				} catch(\Exception $exception) {
+					// If the row couldn't be converted, rethrow it.
+					throw (new \PDOException($exception->getMessage(), 0, $exception));
+				}
+			}
+			return($products);
+		}
+		/**
+		 * gets all Products
+		 *
+		 * @param \PDO $pdo PDO connection object
+		 * @return \SplFixedArray SplFixedArray of Products found or null if not found
+		 * @throws \PDOException when mySQL related errors occur
+		 * @throws \TypeError when variables are not the correct data type
+		 **/
+		public static function getAllProducts(\PDO $pdo) : \SplFixedArray {
+			// create query template
+			$query = "SELECT productId, productProfileId, productContent, productPostDate FROM product";
+			$statement = $pdo->prepare($query);
+			$statement->execute();
+			// build an array of tweets
+			$products = new \SplFixedArray($statement->rowCount());
+			$statement->setFetchMode(\PDO::FETCH_ASSOC);
+			while(($row = $statement->fetch()) !== false) {
+				try {
+					$product = new Product($row["productId"], $row["productProfileId"], $row["productContent"], $row["productPostDate"]);
+					$products[$products->key()] = $product;
+					$products->next();
+				} catch(\Exception $exception) {
+					// If the row couldn't be converted, rethrow it.
+					throw(new \PDOException($exception->getMessage(), 0, $exception));
+				}
+			}
+			return ($products);
+		}
+		/**
+		 * Formats the state variables for JSON serialization.
+		 *
+		 * @return array resulting state variables to serialize
+		 **/
+		public function jsonSerialize() {
+			$fields = get_object_vars($this);
+			//Format the date so that the front end can consume it.
+			$fields["productPostDate"] = round(floatval($this->productPostDate->format("U.u")) * 1000);
+			return($fields);
 		}
 	}
