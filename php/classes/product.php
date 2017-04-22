@@ -28,6 +28,11 @@ class Product {
 	 **/
 	private $productDescription;
 	/**
+	 * Cost of the product.
+	 * @var int $productPrice
+	 **/
+	private $productPrice;
+	/**
 	 * Date and time this Product was posted, in a PHP DateTime object.
 	 * @var \DateTime $productPostDate
 	 **/
@@ -139,6 +144,38 @@ class Product {
 		// Store the product description.
 		$this->productDescription = $newProductDescription;
 	}
+	/**
+	 * Accessor method for product price.
+	 *
+	 * @return float value of product price.
+	 **/
+	public function getProductPrice() : float {
+		return($this->productPrice);
+	}
+	/**
+	 * Mutator method for product price.
+	 *
+	 * @param int|null $newProductPrice new value of product price
+	 * @throws \RangeException if $newProductPrice is not positive
+	 * @throws \TypeError if $newProductPrice is not an integer
+	 **/
+	public function setProductPrice(float $newProductPrice): void {
+		//If product price is null immediately return it.
+		$newProductPrice = filter_var($newProductPrice, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+
+		if($newProductPrice === null) {
+			$this->productPrice = null;
+			return;
+		}
+		// Verify the product price is positive.
+		if($newProductPrice <= 0) {
+			throw(new \RangeException("product price is not positive"));
+		}
+		// Convert and store the product price.
+		$this->productIPrice = $newProductPrice;
+		}
+		//
+
 	/**
 	 * Accessor method for product post date
 	 *
@@ -300,6 +337,6 @@ class Product {
 				// If the row couldn't be converted, rethrow it.
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
 			}
-			return($product);
+			return ($product);
+		}
 	}
-}
