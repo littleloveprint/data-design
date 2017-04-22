@@ -197,7 +197,7 @@ class Product implements \JsonSerializable {
 			$this->productPostDate = new \DateTime();
 			return;
 		}
-		// Store the favorite date using the ValidateDate trait.
+		// Store the product post date using the ValidateDate trait.
 		try {
 			$newProductPostDate = self::validateDateTime($newProductPostDate);
 		} catch(\InvalidArgumentException | \RangeException $exception) {
@@ -219,7 +219,7 @@ class Product implements \JsonSerializable {
 			throw(new \PDOException("product already exists"));
 		}
 		// Create query template
-		$query = "INSERT INTO prodcut(productProfileId, productDescription, productPostDate) VALUES(:productProfileId, :productDescription, :productPostDate)";
+		$query = "INSERT INTO product(productProfileId, productDescription, productPostDate) VALUES(:productProfileId, :productDescription, :productPostDate)";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
