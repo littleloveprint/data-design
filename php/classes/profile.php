@@ -201,214 +201,207 @@ class Profile implements \JsonSerializable {
 	 * @throws \RangeException if $newProfileHash is not positive
 	 * @throws \TypeError if $newProfileHash is not an integer
 	 **/
-	private function setProfileHash(?int $newProfileId): void {
-		//If profile id is null immediately return it.
-		if($newProfileId === null) {
-			$this->profileId = null;
+	private function setProfileHash(?int $newProfileHash): void {
+		// Return nothng.
+		if($newProfileHash === null) {
+			$this->profileHash = null;
 			return;
 		}
-		// Verify the profile id is positive.
-		if($newProfileId <= 0) {
-			throw(new \RangeException("profile id is not positive"));
+		// Verify the profile hash is positive.
+		if($newProfileHash <= 0) {
+			throw(new \RangeException("profile hash is not positive"));
 		}
-		// Convert and store the profile id.
-		$this->profileId = $newProfileId;
 	}
 	/**
-	 * Inserts this product into mySQL.
+	 * Accessor method for profile salt.
+	 *
+	 * @return int value of profile salt
+	 **/
+	private static function getProfileSalt(): ?int {
+		return;
+	}
+	/**
+	 * Mutator method for profile salt.
+	 *
+	 * @param int $newProfileSalt new value of profile salt
+	 * @throws \RangeException if $newProfileSalt is not positive
+	 * @throws \TypeError if $newProfileSalt is not an integer
+	 **/
+	private function setProfileSalt(?int $newProfileSalt): void {
+		// Return nothng.
+		if($newProfileSalt === null) {
+			$this->profileSalt = null;
+			return;
+		}
+		// Verify the profile salt is positive.
+		if($newProfileSalt <= 0) {
+			throw(new \RangeException("profile salt is not positive"));
+		}
+	}
+	/**
+	 * Inserts this profile into mySQL.
 	 *
 	 * @param \PDO $pdo PDO connection object
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError is $pdo is not a PDO connection object
 	 **/
 	public function insert(\PDO $pdo): void {
-		// Enforce the productId is null (i.e., don't insert a product that already exists).
-		if($this->productId !== null) {
-			throw(new \PDOException("product already exists"));
+		// Enforce the profileId is null (i.e., don't insert a profile that already exists).
+		if($this->profileId !== null) {
+			throw(new \PDOException("profile id already exists"));
 		}
 		// Create query template
-		$query = "INSERT INTO product(productProfileId, productDescription, productPostDate) VALUES(:productProfileId, :productDescription, :productPostDate)";
+		$query = "INSERT INTO profile(profileId, profileUserName, profileLocation, profileJoinDate, profileHash, profileSalt) VALUES(:profileId, :profileUserName, :profileLocation, profileJoinDate, profileHash, profileSalt)";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
-		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
-		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productDescription, "productPostDate" => $formattedDate];
+		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s");
+		$parameters = ["profileId" => $this->profileId, "profileUserName" => $this->profileUserName, "profileLocation" => $this->profileLocation, "profileJoinDate" => $this->formattedDate, "profileHash" => $this->profileHash, "profileSalt => $this->profileSalt"];
 		$statement->execute($parameters);
-		// Update the null productId with what mySQL just gave us.
-		$this->productId = intval($pdo->lastInsertId());
+		// Update the null profileId with what mySQL just gave us.
+		$this->profileId = intval($pdo->lastInsertId());
 	}
 	/**
-	 * Deletes this product from mySQL
+	 * Deletes this profile from mySQL
 	 *
 	 * @param \PDO $pdo PDO connection object
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError if $pdo is not a PDO connection object
 	 **/
 	public function delete(\PDO $pdo) : void {
-		// Enforce the productId is not null (i.e. don't delete a product that hasn't been inserted).
-		if($this->productId === null) {
-			throw(new \PDOException("unable to delete a product that doesn't exist"));
+		// Enforce the profileId is not null (i.e. don't delete a profile that hasn't been inserted).
+		if($this->profileId === null) {
+			throw(new \PDOException("unable to delete a profile that doesn't exist"));
 		}
 		// Create query template.
-		$query = "DELETE FROM product WHERE productId = :productId";
+		$query = "DELETE FROM profile WHERE profileId = :profileId";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holder in the template.
-		$parameters = ["productId" => $this->productId];
+		$parameters = ["profileId" => $this->profileId];
 		$statement->execute($parameters);
 	}
 	/**
-	 * Updates this product in mySQL.
+	 * Updates this profile in mySQL.
 	 *
 	 * @param \PDO $pdo PDO connection object
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError if $pdo is not a PDO connection object
 	 **/
 	public function update(\PDO $pdo) : void {
-		// Enforce the productId is not null (i.e. don't update a product that hasn't been inserted).
-		if($this->productId === null) {
-			throw(new \PDOException("unable to update a product that does not exist"));
+		// Enforce the profileId is not null (i.e. don't update a profile that hasn't been inserted).
+		if($this->profileId === null) {
+			throw(new \PDOException("unable to update a profile that does not exist"));
 		}
 		// Create query template.
-		$query = "UPDATE product SET productProfileId = :productProfileId, productDescription = :productDescription, productPostDate = :productPostDate WHERE productId = :productId";
+		$query = "UPDATE profile SET profileId = :profileId, profileUserName = :profileUserName, profileLocation = :profileLocation, profileJoinDate = :profileJoinDate WHERE profileId = :profileId";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
-		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
-		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productId];
+		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s");
+		$parameters = ["profileId" => $this->profileId, "profileUserName" => $this->profileUserName, "profileLocation" => $this->profileLocation];
 		$statement->execute($parameters);
 	}
 	/**
-	 * Gets the product by content.
+	 * Gets the profile by username.
 	 *
 	 * @param \PDO $pdo PDO connection object
-	 * @param string $productDescription product content to search for
-	 * @return \SplFixedArray SplFixedArray of products found
+	 * @param string $profileUserName profile username to search for
+	 * @return \SplFixedArray SplFixedArray of profiles found
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
-	public static function getProductByProductDescription(\PDO $pdo, string $productDescription) {
-		// Sanatize the description before searching
-		$productDescription = trim($productDescription);
-		$productDescription = filter_var($productDescription, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
-		if(empty($productDescription) === true) {
-			throw(new \PDOException("product description invalid"));
+	public static function getProfileByProfileUserName(\PDO $pdo, string $profileUserName) {
+		// Sanatize the username before searching
+		$profileUserName = trim($profileUserName);
+		$profileUserName = filter_var($profileUserName, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($profileUserName) === true) {
+			throw(new \PDOException("profile username invalid"));
 		}
 		// Create query template.
-		$query = "SELECT productId, productProfileId, productDescription, productPostDate FROM product WHERE productDescription LIKE :productDescription";
+		$query = "SELECT profileId, profileUserName, profileLocation, profileJoinDate FROM profile WHERE profile.profileUserName LIKE :profileUserName";
 		$statement = $pdo->prepare($query);
-		// Bind the product description to the place holder in the template.
-		$productDescription = "%productDescription%";
-		$parameters = ["productDescription" => $profileLocation];
+		// Bind the profile username to the place holder in the template.
+		$profileUserName = "%profileUserName%";
+		$parameters = ["profileUserName" => $profileUserName];
 		$statement->execute($parameters);
-		// Build an array of profile locations.
-		$products = new \SplFixedArray($statement->rowCount());
+		// Build an array of profiles.
+		$profiles = new \SplFixedArray($statement->rowCount());
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
 		while(($row = $statement->fetch()) !== false) {
 			try {
-				$product = new Product($row["productId"], $row["productPostDate"]);
-				$products[$products->key()] = $product;
-				$products->next();
+				$profile = new Profile($row["profileId"], $row["profileUserName"], $row["profileLocation"], $row["profileJoinDate"]);
+				$profiles[$profiles->key()] = $profile;
+				$profiles->next();
 			} catch(\Exception $exception) {
 				// If the row couldn't be converted, rethrow it.
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
 			}
 		}
-		return($products);
+		return($profiles);
 	}
 	/**
-	 * Gets the Product by productId.
+	 * Gets the profile by location.
 	 *
 	 * @param \PDO $pdo PDO connection object
-	 * @param int $productId product id to search for
-	 * @return Product|null Product found or null if not found
-	 * @throws \PDOException when mySQL errors occur
-	 * @throws \TypeError when variables are not the correct data type
-	 **/
-	public static function getProductByProductId(\PDO $pdo, int $productId) : ?Product {
-		// Sanitize the productId before searching.
-		if($productId <= 0) {
-			throw(new \PDOException("product id is not positive"));
-		}
-		// Create query template.
-		$query = "SELECT productId, productProfileId, productDescription, productPostDate FROM product WHERE productId = :productId";
-		$statement = $pdo->prepare($query);
-		// Bind the product id to the place holder in the template.
-		$parameters = ["productId" => $productId];
-		$statement->execute($parameters);
-		// Grab the product from mySQL
-		try {
-			$product = null;
-			$statement->setFetchMode(\PDO::FETCH_ASSOC);
-			$row = $statement->fetch();
-			if($row !== false) {
-				$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPostDate"]);
-			}
-		} catch(\Exception $exception) {
-			// If the row couldn't be converted, rethrow it.
-			throw(new \PDOException($exception->getMessage(), 0, $exception));
-		}
-		return ($product);
-	}
-	/**
-	 * Gets the Product by profile id
-	 *
-	 * @param \PDO $pdo PDO connection object
-	 * @param int $productProfileId profile id to search by
-	 * @return \SplFixedArray SplFixedArray of Products found
+	 * @param string $profileLocation profile location to search for
+	 * @return \SplFixedArray SplFixedArray of profiles found
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
-	public static function getProductByProductProfileId(\PDO $pdo, int $productProfileId) : \SplFixedArray {
-		// Sanitize the profile id before searching
-		if($productProfileId <= 0) {
-			throw(new \RangeException("product profile id must be positive"));
+	public static function getProfileByProfileLocation(\PDO $pdo, string $profileLocation) {
+		// Sanatize the location before searching
+		$profileLocation = trim($profileLocation);
+		$profileLocation = filter_var($profileLocation, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty($profileLocation) === true) {
+			throw(new \PDOException("profile location invalid"));
 		}
-		// Create query template
-		$query = "SELECT productId, productProfileId, productContent, productPostDate FROM product WHERE productProfileId = :productProfileId";
+		// Create query template.
+		$query = "SELECT profileId, profileUserName, profileLocation, profileJoinDate FROM profile WHERE profile.profileLocation LIKE :profileLocation";
 		$statement = $pdo->prepare($query);
-		// Bind the product profile id to the place holder in the template.
-		$parameters = ["productProfileId" => $productProfileId];
+		// Bind the profile location to the place holder in the template.
+		$profileLocation = "%profileLocation%";
+		$parameters = ["profileLocation" => $profileLocation];
 		$statement->execute($parameters);
-		// Build an array of products.
-		$products = new \SplFixedArray($statement->rowCount());
+		// Build an array of profiles.
+		$profiles = new \SplFixedArray($statement->rowCount());
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
 		while(($row = $statement->fetch()) !== false) {
 			try {
-				$product = new Product($row["productId"], $row["productProfileId	"], $row["productContent"], $row["productPostDate"]);
-				$products[$products->key()] = $product;
-				$products->next();
+				$profile = new Profile($row["profileId"], $row["profileUserName"], $row["profileLocation"], $row["profileJoinDate"]);
+				$profiles[$profiles->key()] = $profile;
+				$profiles->next();
 			} catch(\Exception $exception) {
 				// If the row couldn't be converted, rethrow it.
-				throw (new \PDOException($exception->getMessage(), 0, $exception));
+				throw(new \PDOException($exception->getMessage(), 0, $exception));
 			}
 		}
-		return($products);
+		return($profiles);
 	}
 	/**
-	 * gets all Products
+	 * Gets all Profiles.
 	 *
 	 * @param \PDO $pdo PDO connection object
-	 * @return \SplFixedArray SplFixedArray of Products found or null if not found
+	 * @return \SplFixedArray SplFixedArray of Profiles found or null if not found
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
-	public static function getAllProducts(\PDO $pdo) : \SplFixedArray {
+	public static function getAllProfiles(\PDO $pdo) : \SplFixedArray {
 		// create query template
-		$query = "SELECT productId, productProfileId, productContent, productPostDate FROM product";
+		$query = "SELECT profileId, profileUserName, profileLocation, profileJoinDate FROM profile";
 		$statement = $pdo->prepare($query);
 		$statement->execute();
-		// build an array of tweets
-		$products = new \SplFixedArray($statement->rowCount());
+		// Build an array of profiles.
+		$profiles = new \SplFixedArray($statement->rowCount());
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
 		while(($row = $statement->fetch()) !== false) {
 			try {
-				$product = new Product($row["productId"], $row["productProfileId"], $row["productContent"], $row["productPostDate"]);
-				$products[$products->key()] = $product;
-				$products->next();
+				$profile = new Profile($row["profileId"], $row["profileUserName"], $row["profileLocation"], $row["profileJoinDate"]);
+				$profile[$profiles->key()] = $profile;
+				$profiles->next();
 			} catch(\Exception $exception) {
 				// If the row couldn't be converted, rethrow it.
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
 			}
 		}
-		return ($products);
+		return ($profiles);
 	}
 	/**
 	 * Formats the state variables for JSON serialization.
@@ -418,7 +411,7 @@ class Profile implements \JsonSerializable {
 	public function jsonSerialize() {
 		$fields = get_object_vars($this);
 		//Format the date so that the front end can consume it.
-		$fields["productPostDate"] = round(floatval($this->productPostDate->format("U.u")) * 1000);
+		$fields["profileJoinDate"] = round(floatval($this->profileJoinDate->format("U.u")) * 1000);
 		return($fields);
 	}
 }
