@@ -123,7 +123,7 @@ class Product implements \JsonSerializable {
 		return ($this->productDescription);
 	}
 	/**
-	 * Mutator method for product content.
+	 * Mutator method for product description.
 	 *
 	 * @param string $newProductDescription new value of product description.
 	 * @throws \InvalidArgumentException if $newProductDescription is not a string or insecure
@@ -138,7 +138,7 @@ class Product implements \JsonSerializable {
 			throw(new \InvalidArgumentException("product content is empty or insecure"));
 		}
 		// Verify the product description will fit in the database.
-		if(strlen($newProductDescription) > 1000) {
+		if(strlen($newProductDescription) < 1000) {
 			throw(new \RangeException("product description too large"));
 		}
 		// Store the product description.
@@ -219,7 +219,7 @@ class Product implements \JsonSerializable {
 			throw(new \PDOException("product already exists"));
 		}
 		// Create query template
-		$query = "INSERT INTO product(productProfileId, productDescription, productPostDate) VALUES(:productProfileId, :productDescription, :productPostDate)";
+		$query = "INSERT INTO product(productProfileId, productDescription, productPrice, productPostDate) VALUES(:productProfileId, :productDescription, :productPrice, :productPostDate)";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
@@ -260,7 +260,7 @@ class Product implements \JsonSerializable {
 			throw(new \PDOException("unable to update a product that does not exist"));
 		}
 		// Create query template.
-		$query = "UPDATE product SET productProfileId = :productProfileId, productDescription = :productDescription, productPostDate = :productPostDate WHERE productId = :productId";
+		$query = "UPDATE product SET productProfileId = :productProfileId, productDescription = :productDescription, productPostDate = :productPostDate, productPrice = :productPrice WHERE productId = :productId";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
@@ -268,10 +268,10 @@ class Product implements \JsonSerializable {
 		$statement->execute($parameters);
 	}
 	/**
-	 * Gets the product by content.
+	 * Gets the product by description.
 	 *
 	 * @param \PDO $pdo PDO connection object
-	 * @param string $productDescription product content to search for
+	 * @param string $productDescription product description to search for
 	 * @return \SplFixedArray SplFixedArray of products found
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError when variables are not the correct data type
@@ -284,7 +284,7 @@ class Product implements \JsonSerializable {
 			throw(new \PDOException("product description invalid"));
 		}
 		// Create query template.
-		$query = "SELECT productId, productProfileId, productDescription, productPostDate FROM product WHERE productDescription LIKE :productDescription";
+		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productDescription LIKE :productDescription";
 		$statement = $pdo->prepare($query);
 		// Bind the product description to the place holder in the template.
 		$productDescription = "%productDescription%";
@@ -295,7 +295,7 @@ class Product implements \JsonSerializable {
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
 		while(($row = $statement->fetch()) !== false) {
 			try {
-				$product = new Product($row["productId"], $row["productPostDate"]);
+				$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPrice"], $row["productPostDate"]);
 				$products[$products->key()] = $product;
 				$products->next();
 			} catch(\Exception $exception) {
@@ -320,7 +320,7 @@ class Product implements \JsonSerializable {
 				throw(new \PDOException("product id is not positive"));
 			}
 			// Create query template.
-			$query = "SELECT productId, productProfileId, productDescription, productPostDate FROM product WHERE productId = :productId";
+			$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productId = :productId";
 			$statement = $pdo->prepare($query);
 			// Bind the product id to the place holder in the template.
 			$parameters = ["productId" => $productId];
@@ -331,8 +331,10 @@ class Product implements \JsonSerializable {
 				$statement->setFetchMode(\PDO::FETCH_ASSOC);
 				$row = $statement->fetch();
 				if($row !== false) {
-					$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPostDate"]);
+					$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPrice"], $row["productPostDate"]);
 				}
+				$products[$products->key()] = $product;
+				$products->next();
 			} catch(\Exception $exception) {
 				// If the row couldn't be converted, rethrow it.
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
@@ -354,7 +356,7 @@ class Product implements \JsonSerializable {
 				throw(new \RangeException("product profile id must be positive"));
 			}
 			// Create query template
-			$query = "SELECT productId, productProfileId, productContent, productPostDate FROM product WHERE productProfileId = :productProfileId";
+			$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productProfileId = :productProfileId";
 			$statement = $pdo->prepare($query);
 			// Bind the product profile id to the place holder in the template.
 			$parameters = ["productProfileId" => $productProfileId];
@@ -374,8 +376,43 @@ class Product implements \JsonSerializable {
 			}
 			return($products);
 		}
+	/**
+	 * Gets the Product by product price.
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @param int $productPrice to search by product price
+	 * @return \SplFixedArray SplFixedArray of Product Prices found
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError when variables are not the correct data type
+	 **/
+	public static function getProductByProductPrice(\PDO $pdo, int $productPrice) : \SplFixedArray {
+		// Ensure product price is valid.
+		if($productPrice <= 0) {
+			throw(new \RangeException("product price must be positive"));
+		}
+		// Create query template
+		$query = "SELECT productId, productProfileId, productDescription, productPrice, productDescription FROM product WHERE productPrice = :productPrice";
+		$statement = $pdo->prepare($query);
+		// Bind the product price to the place holder in the template.
+		$parameters = ["productPrice" => $productPrice];
+		$statement->execute($parameters);
+		// Build an array of product prices.
+		$products = new \SplFixedArray($statement->rowCount());
+		$statement->setFetchMode(\PDO::FETCH_ASSOC);
+		while(($row = $statement->fetch()) !== false) {
+			try {
+				$product = new Product($row["productId"], $row["productProfileId	"], $row["productContent"], $row["productPrice"], $row["productPostDate"]);
+				$products[$products->key()] = $product;
+				$products->next();
+			} catch(\Exception $exception) {
+				// If the row couldn't be converted, rethrow it.
+				throw (new \PDOException($exception->getMessage(), 0, $exception));
+			}
+		}
+		return($products);
+	}
 		/**
-		 * gets all Products
+		 * Gets all Products
 		 *
 		 * @param \PDO $pdo PDO connection object
 		 * @return \SplFixedArray SplFixedArray of Products found or null if not found
@@ -384,7 +421,7 @@ class Product implements \JsonSerializable {
 		 **/
 		public static function getAllProducts(\PDO $pdo) : \SplFixedArray {
 			// create query template
-			$query = "SELECT productId, productProfileId, productContent, productPostDate FROM product";
+			$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product";
 			$statement = $pdo->prepare($query);
 			$statement->execute();
 			// build an array of tweets
