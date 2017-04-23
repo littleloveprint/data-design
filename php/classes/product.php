@@ -43,6 +43,7 @@ class Product implements \JsonSerializable {
 	 * @param int|null $newProductId id of this Product or null if a new Product
 	 * @param int $newProductProfileId id of the Profile that posted this Product
 	 * @param string $newProductDescription string containing actual Product data
+	 * @param float $newProductPrice float containing price of product
 	 * @param \DateTime|string|null $newProductPostDate date and time Product was posted or null if set to current date and time
 	 * @throws \InvalidArgumentException if data types are not valid
 	 * @throws \RangeException if data values are out of bounds (e.g., strings too long, negative integers)
@@ -50,11 +51,12 @@ class Product implements \JsonSerializable {
 	 * @throws \Exception if some other exception occurs
 	 * @documentation https://php.net/manual/en/language.oop5.decon.php
 	 **/
-	public function __construct(?int $newProductId, int $newProductProfileId, string $newProductDescription, $newProductPostDate = null) {
+	public function __construct(?int $newProductId, int $newProductProfileId, string $newProductDescription, float $newProductPrice, $newProductPostDate = null) {
 		try {
 			$this->setProductId($newProductId);
 			$this->setProductProfileId($newProductProfileId);
 			$this->setProductDescription($newProductDescription);
+			$this->setProductPrice($newProductPrice);
 			$this->setProductPostDate($newProductPostDate);
 		}
 			//determine what exception type was thrown
@@ -223,7 +225,7 @@ class Product implements \JsonSerializable {
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
-		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productDescription, "productPostDate" => $formattedDate];
+		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productDescription, "productPrice" => $this->productPrice, "productPostDate" => $formattedDate];
 		$statement->execute($parameters);
 		// Update the null productId with what mySQL just gave us.
 		$this->productId = intval($pdo->lastInsertId());
@@ -260,7 +262,7 @@ class Product implements \JsonSerializable {
 			throw(new \PDOException("unable to update a product that does not exist"));
 		}
 		// Create query template.
-		$query = "UPDATE product SET productProfileId = :productProfileId, productDescription = :productDescription, productPostDate = :productPostDate, productPrice = :productPrice WHERE productId = :productId";
+		$query = "UPDATE product SET productProfileId = :productProfileId, productDescription = :productDescription, productPrice = :productPrice, productPostDate = :productPostDate WHERE productId = :productId";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
