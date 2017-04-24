@@ -254,7 +254,7 @@ class Profile implements \JsonSerializable {
 		$query = "INSERT INTO profile(profileId, profileUserName, profileLocation, profileJoinDate, profileHash, profileSalt) VALUES(:profileId, :profileUserName, :profileLocation, profileJoinDate, profileHash, profileSalt)";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
-		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s");
+		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s.u");
 		$parameters = ["profileId" => $this->profileId, "profileUserName" => $this->profileUserName, "profileLocation" => $this->profileLocation, "profileJoinDate" => $this->formattedDate, "profileHash" => $this->profileHash, "profileSalt => $this->profileSalt"];
 		$statement->execute($parameters);
 		// Update the null profileId with what mySQL just gave us.
@@ -295,7 +295,7 @@ class Profile implements \JsonSerializable {
 		$query = "UPDATE profile SET profileId = :profileId, profileUserName = :profileUserName, profileLocation = :profileLocation, profileJoinDate = :profileJoinDate WHERE profileId = :profileId";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
-		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s");
+		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s.u");
 		$parameters = ["profileId" => $this->profileId, "profileUserName" => $this->profileUserName, "profileLocation" => $this->profileLocation];
 		$statement->execute($parameters);
 	}

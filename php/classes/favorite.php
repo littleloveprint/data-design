@@ -147,7 +147,7 @@ class Favorite implements \JsonSerializable {
 		$query = "INSERT INTO favorite(favoriteProfileId, favoriteProductId, favoriteDate) VALUES(:favoriteProfileId, :favoriteProductId, :favoriteDate)";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
-		$formattedDate = $this->favoriteDate->format("Y-m-d H:i:s");
+		$formattedDate = $this->favoriteDate->format("Y-m-d H:i:s.u");
 		$parameters = ["favoriteProfileId" => $this->favoriteProfileId, "favoriteProductId" => $this->favoriteProductId, "favoriteDate" => $formattedDate];
 		$statement->execute($parameters);
 		// Update the null productId with what mySQL just gave us.
@@ -188,7 +188,7 @@ class Favorite implements \JsonSerializable {
 		$query = "UPDATE favorite SET favoriteProfileId = :favoriteProfileId, favoriteProductId = :favoriteProductId, favoriteDate = :favoriteDate WHERE favoriteProfileId = :favoriteProfileId";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
-		$formattedDate = $this->favoriteDate->format("Y-m-d H:i:s");
+		$formattedDate = $this->favoriteDate->format("Y-m-d H:i:s.u");
 		$parameters = ["favoriteProfileId" => $this->favoriteProfileId, "favoriteProductId" => $this->favoriteProductId];
 		$statement->execute($parameters);
 	}

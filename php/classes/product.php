@@ -224,7 +224,7 @@ class Product implements \JsonSerializable {
 		$query = "INSERT INTO product(productProfileId, productDescription, productPrice, productPostDate) VALUES(:productProfileId, :productDescription, :productPrice, :productPostDate)";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
-		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
+		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s.u");
 		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productDescription, "productPrice" => $this->productPrice, "productPostDate" => $formattedDate];
 		$statement->execute($parameters);
 		// Update the null productId with what mySQL just gave us.
@@ -265,7 +265,7 @@ class Product implements \JsonSerializable {
 		$query = "UPDATE product SET productProfileId = :productProfileId, productDescription = :productDescription, productPrice = :productPrice, productPostDate = :productPostDate WHERE productId = :productId";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
-		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s");
+		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s.u");
 		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productId];
 		$statement->execute($parameters);
 	}
