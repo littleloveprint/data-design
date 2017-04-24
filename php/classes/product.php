@@ -266,7 +266,7 @@ class Product implements \JsonSerializable {
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s.u");
-		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productId];
+		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productDescription, "productPrice" => $this->productPrice, "productPostDate" => $formattedDate];
 		$statement->execute($parameters);
 	}
 	/**
