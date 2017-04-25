@@ -38,7 +38,7 @@ class Favorite implements \JsonSerializable {
 	 * @throws \Exception if some other exception occurs
 	 * @documentation https://php.net/manual/en/language.oop5.decon.php
 	 **/
-	public function __construct(?int $newFavoriteProfileId, int $newFavoriteProductId, string $newFavoriteDate = null) {
+	public function __construct(?int $newFavoriteProfileId, int $newFavoriteProductId, \DateTime $newFavoriteDate = null) {
 		try {
 			$this->setFavoriteProfileId($newFavoriteProfileId);
 			$this->setFavoriteProductId($newFavoriteProductId);
@@ -230,7 +230,7 @@ class Favorite implements \JsonSerializable {
 	 *
 	 * @param \PDO $pdo PDO connection object
 	 * @param int $favoriteProductId favorite product id to search for
-	 * @return Product|null Favorite found or null if not found
+	 * @return Favorite|null Favorite found or null if not found
 	 * @throws \PDOException when mySQL errors occur
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
@@ -240,7 +240,7 @@ class Favorite implements \JsonSerializable {
 			throw(new \PDOException("favorite product id is not positive"));
 		}
 		// Create query template.
-		$query = "SELECT favoriteProductId, favoriteProductProfileId, favoriteDate FROM favorite WHERE favoriteProductId = :favoriteProductId";
+		$query = "SELECT favoriteProfileId, favoriteProductId, favoriteDate FROM favorite WHERE favoriteProductId = :favoriteProductId";
 		$statement = $pdo->prepare($query);
 		// Bind the favorite product id to the place holder in the template.
 		$parameters = ["favoriteProductId" => $favoriteProductId];

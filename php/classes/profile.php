@@ -314,13 +314,7 @@ class Profile implements \JsonSerializable {
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s.u");
-		$parameters = [
-			"profileId" => $this->profileId,
-			"profileUserName" => $this->profileUserName,
-			"profileLocation" => $this->profileLocation,
-			"profileJoinDate" => $this->profileJoinDate,
-			"profileHash" => $this->profileHash,
-			"profileSalt" => $this->profileSalt
+		$parameters = ["profileId" => $this->profileId, "profileUserName" => $this->profileUserName, "profileLocation" => $this->profileLocation, "profileJoinDate" => $this->profileJoinDate, "profileHash" => $this->profileHash, "profileSalt" => $this->profileSalt
 		];
 		$statement->execute($parameters);
 	}
@@ -334,7 +328,7 @@ class Profile implements \JsonSerializable {
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
 	public static function getProfileByProfileUserName(\PDO $pdo, string $profileUserName) {
-		// Sanatize the username before searching
+		// Sanitize the username before searching
 		$profileUserName = trim($profileUserName);
 		$profileUserName = filter_var($profileUserName, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 		if(empty($profileUserName) === true) {

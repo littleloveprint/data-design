@@ -51,7 +51,7 @@ class Product implements \JsonSerializable {
 	 * @throws \Exception if some other exception occurs
 	 * @documentation https://php.net/manual/en/language.oop5.decon.php
 	 **/
-	public function __construct(?int $newProductId, int $newProductProfileId, string $newProductDescription, float $newProductPrice, $newProductPostDate = null) {
+	public function __construct(?int $newProductId, int $newProductProfileId, string $newProductDescription, float $newProductPrice, \DateTime $newProductPostDate = null) {
 		try {
 			$this->setProductId($newProductId);
 			$this->setProductProfileId($newProductProfileId);
@@ -391,7 +391,7 @@ class Product implements \JsonSerializable {
 			throw(new \RangeException("product price must be positive"));
 		}
 		// Create query template
-		$query = "SELECT productId, productProfileId, productDescription, productPrice, productDescription FROM product WHERE productPrice = :productPrice";
+		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productPrice = :productPrice";
 		$statement = $pdo->prepare($query);
 		// Bind the product price to the place holder in the template.
 		$parameters = ["productPrice" => $productPrice];
