@@ -28,17 +28,17 @@ class Profile implements \JsonSerializable {
 	private $profileLocation;
 	/**
 	 * Date and time user created their profile, in a PHP DateTime object.
-	 * @var int $profileJoinDate
+	 * @var \DateTime $profileJoinDate
 	 **/
 	private $profileJoinDate;
 	/**
 	 * Jumbles users' passwords.
-	 * @var int $profileHash
+	 * @var string $profileHash
 	 **/
 	private $profileHash;
 	/**
 	 * Adds extra security to users' passwords.
-	 * @var int $profileSalt
+	 * @var string $profileSalt
 	 **/
 	private $profileSalt;
 	/**
@@ -54,7 +54,7 @@ class Profile implements \JsonSerializable {
 	 * @throws \Exception if some other exception occurs
 	 * @documentation https://php.net/manual/en/language.oop5.decon.php
 	 **/
-	public function __construct(?int $newProfileId, string $newProfileUserName, $newProfileLocation, $newProfileJoinDate, $newProfileHash, $newProfileSalt = null) {
+	public function __construct(?int $newProfileId, string $newProfileUserName, string $newProfileLocation, \DateTime $newProfileJoinDate, string $newProfileHash, string $newProfileSalt) {
 		try {
 			$this->setProfileId($newProfileId);
 			$this->setProfileUserName($newProfileUserName);
@@ -100,7 +100,7 @@ class Profile implements \JsonSerializable {
 	/**
 	 * Accessor method for profile username.
 	 *
-	 * @return int value of profile username
+	 * @return string value of profile username
 	 **/
 	public function getProfileUserName(): string {
 		return ($this->profileUserName);
@@ -187,56 +187,69 @@ class Profile implements \JsonSerializable {
 		$this->profileJoinDate = $newProfileJoinDate;
 	}
 	/**
-	 * Accessor method for profile hash.
+	 * Accessor method for profileHash
 	 *
-	 * @return int value of profile hash
-	 **/
-	private static function getProfileHash(): ?int {
-		return;
+	 * @return string value of hash
+	 */
+	public function getProfileHash(): string {
+		return $this->profileHash;
 	}
 	/**
-	 * Mutator method for profile hash.
+	 * Mutator method for profile hash
 	 *
-	 * @param int $newProfileHash new value of profile hash
-	 * @throws \RangeException if $newProfileHash is not positive
-	 * @throws \TypeError if $newProfileHash is not an integer
-	 **/
-	private function setProfileHash(?int $newProfileHash): void {
-		// Return nothng.
-		if($newProfileHash === null) {
-			$this->profileHash = null;
-			return;
+	 * @param string $newProfileHash
+	 * @throws \InvalidArgumentException if the hash is not secure
+	 * @throws \RangeException if the hash is not 128 characters
+	 * @throws \TypeError if profile hash is not a string
+	 */
+	public function setProfileHash(string $newProfileHash): void {
+		// Enforce that the hash is properly formatted
+		$newProfileHash = trim($newProfileHash);
+		$newProfileHash = strtolower($newProfileHash);
+		if(empty($newProfileHash) === true) {
+			throw(new \InvalidArgumentException("profile password hash empty or insecure"));
 		}
-		// Verify the profile hash is positive.
-		if($newProfileHash <= 0) {
-			throw(new \RangeException("profile hash is not positive"));
+		// Enforce that the hash is a string representation of a hexadecimal
+		if(!ctype_xdigit($newProfileHash)) {
+			throw(new \InvalidArgumentException("profile password hash is empty or insecure"));
 		}
+		// Enforce that the hash is exactly 128 characters
+		if(strlen($newProfileHash) !== 128) {
+			throw(new \RangeException("profile hash must be 128 characters"));
+		}
+		// Store the hash
+		$this->profileHash = $newProfileHash;
 	}
 	/**
-	 * Accessor method for profile salt.
+	 *accessor method for profile salt
 	 *
-	 * @return int value of profile salt
-	 **/
-	private static function getProfileSalt(): ?int {
-		return;
+	 * @return string representation of the salt hexadecimal
+	 */
+	public function getProfileSalt(): string {
+		return $this->profileSalt;
 	}
 	/**
-	 * Mutator method for profile salt.
+	 * Mutator method for profile salt
 	 *
-	 * @param int $newProfileSalt new value of profile salt
-	 * @throws \RangeException if $newProfileSalt is not positive
-	 * @throws \TypeError if $newProfileSalt is not an integer
-	 **/
-	private function setProfileSalt(?int $newProfileSalt): void {
-		// Return nothng.
-		if($newProfileSalt === null) {
-			$this->profileSalt = null;
-			return;
+	 * @param string $newProfileSalt
+	 * @throws \InvalidArgumentException if the salt is not secure
+	 * @throws \RangeException if the salt is not 64 characters
+	 * @throws \TypeError if profile salt is not a string
+	 */
+	public function setProfileSalt(string $newProfileSalt): void {
+		// Enforce that the salt is properly formatted
+		$newProfileSalt = trim($newProfileSalt);
+		$newProfileSalt = strtolower($newProfileSalt);
+		// Enforce that the salt is a string representation of a hexadecimal
+		if(!ctype_xdigit($newProfileSalt)) {
+			throw(new \InvalidArgumentException("profile password hash is empty or insecure"));
 		}
-		// Verify the profile salt is positive.
-		if($newProfileSalt <= 0) {
-			throw(new \RangeException("profile salt is not positive"));
+		// Enforce that the salt is exactly 64 characters
+		if(strlen($newProfileSalt) !== 64) {
+			throw(new \RangeException("profile salt must be 64 characters"));
 		}
+		// Store the salt
+		$this->profileSalt = $newProfileSalt;
 	}
 	/**
 	 * Inserts this profile into mySQL.
@@ -251,11 +264,16 @@ class Profile implements \JsonSerializable {
 			throw(new \PDOException("profile id already exists"));
 		}
 		// Create query template
-		$query = "INSERT INTO profile(profileId, profileUserName, profileLocation, profileJoinDate, profileHash, profileSalt) VALUES(:profileId, :profileUserName, :profileLocation, profileJoinDate, profileHash, profileSalt)";
+		$query = "INSERT INTO profile(profileUserName, profileLocation, profileJoinDate, profileHash, profileSalt) VALUES(:profileUserName, :profileLocation, :profileJoinDate, :profileHash, :profileSalt)";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s.u");
-		$parameters = ["profileId" => $this->profileId, "profileUserName" => $this->profileUserName, "profileLocation" => $this->profileLocation, "profileJoinDate" => $this->formattedDate, "profileHash" => $this->profileHash, "profileSalt => $this->profileSalt"];
+		$parameters = [
+			"profileUserName" => $this->profileUserName,
+			"profileLocation" => $this->profileLocation,
+			"profileJoinDate" => $formattedDate,
+			"profileHash" => $this->profileHash,
+			"profileSalt" => $this->profileSalt];
 		$statement->execute($parameters);
 		// Update the null profileId with what mySQL just gave us.
 		$this->profileId = intval($pdo->lastInsertId());
@@ -292,11 +310,18 @@ class Profile implements \JsonSerializable {
 			throw(new \PDOException("unable to update a profile that does not exist"));
 		}
 		// Create query template.
-		$query = "UPDATE profile SET profileId = :profileId, profileUserName = :profileUserName, profileLocation = :profileLocation, profileJoinDate = :profileJoinDate WHERE profileId = :profileId";
+		$query = "UPDATE profile SET profileUserName = :profileUserName, profileLocation = :profileLocation, profileJoinDate = :profileJoinDate, profileHash = :profileHash, profileSalt = :profileSalt WHERE profileId = :profileId";
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s.u");
-		$parameters = ["profileId" => $this->profileId, "profileUserName" => $this->profileUserName, "profileLocation" => $this->profileLocation];
+		$parameters = [
+			"profileId" => $this->profileId,
+			"profileUserName" => $this->profileUserName,
+			"profileLocation" => $this->profileLocation,
+			"profileJoinDate" => $this->profileJoinDate,
+			"profileHash" => $this->profileHash,
+			"profileSalt" => $this->profileSalt
+		];
 		$statement->execute($parameters);
 	}
 	/**
@@ -316,7 +341,7 @@ class Profile implements \JsonSerializable {
 			throw(new \PDOException("profile username invalid"));
 		}
 		// Create query template.
-		$query = "SELECT profileId, profileUserName, profileLocation, profileJoinDate FROM profile WHERE profile.profileUserName LIKE :profileUserName";
+		$query = "SELECT profileId, profileUserName, profileLocation, profileJoinDate, profileHash, profileSalt FROM profile WHERE profileUserName = :profileUserName";
 		$statement = $pdo->prepare($query);
 		// Bind the profile username to the place holder in the template.
 		$profileUserName = "%profileUserName%";
@@ -327,7 +352,7 @@ class Profile implements \JsonSerializable {
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
 		while(($row = $statement->fetch()) !== false) {
 			try {
-				$profile = new Profile($row["profileId"], $row["profileUserName"], $row["profileLocation"], $row["profileJoinDate"]);
+				$profile = new Profile($row["profileId"], $row["profileUserName"], $row["profileLocation"], $row["profileJoinDate"], $row["profileHash"], $row["profileSalt"]);
 				$profiles[$profiles->key()] = $profile;
 				$profiles->next();
 			} catch(\Exception $exception) {
@@ -354,7 +379,7 @@ class Profile implements \JsonSerializable {
 			throw(new \PDOException("profile location invalid"));
 		}
 		// Create query template.
-		$query = "SELECT profileId, profileUserName, profileLocation, profileJoinDate FROM profile WHERE profile.profileLocation LIKE :profileLocation";
+		$query = "SELECT profileId, profileUserName, profileLocation, profileJoinDate, profileHash, profileSalt FROM profile WHERE profileLocation LIKE :profileLocation";
 		$statement = $pdo->prepare($query);
 		// Bind the profile location to the place holder in the template.
 		$profileLocation = "%profileLocation%";
@@ -365,7 +390,7 @@ class Profile implements \JsonSerializable {
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
 		while(($row = $statement->fetch()) !== false) {
 			try {
-				$profile = new Profile($row["profileId"], $row["profileUserName"], $row["profileLocation"], $row["profileJoinDate"]);
+				$profile = new Profile($row["profileId"], $row["profileUserName"], $row["profileLocation"], $row["profileJoinDate"], $row["profileHash"], $row["profileSalt"]);
 				$profiles[$profiles->key()] = $profile;
 				$profiles->next();
 			} catch(\Exception $exception) {
@@ -374,34 +399,6 @@ class Profile implements \JsonSerializable {
 			}
 		}
 		return($profiles);
-	}
-	/**
-	 * Gets all Profiles.
-	 *
-	 * @param \PDO $pdo PDO connection object
-	 * @return \SplFixedArray SplFixedArray of Profiles found or null if not found
-	 * @throws \PDOException when mySQL related errors occur
-	 * @throws \TypeError when variables are not the correct data type
-	 **/
-	public static function getAllProfiles(\PDO $pdo) : \SplFixedArray {
-		// create query template
-		$query = "SELECT profileId, profileUserName, profileLocation, profileJoinDate FROM profile";
-		$statement = $pdo->prepare($query);
-		$statement->execute();
-		// Build an array of profiles.
-		$profiles = new \SplFixedArray($statement->rowCount());
-		$statement->setFetchMode(\PDO::FETCH_ASSOC);
-		while(($row = $statement->fetch()) !== false) {
-			try {
-				$profile = new Profile($row["profileId"], $row["profileUserName"], $row["profileLocation"], $row["profileJoinDate"]);
-				$profile[$profiles->key()] = $profile;
-				$profiles->next();
-			} catch(\Exception $exception) {
-				// If the row couldn't be converted, rethrow it.
-				throw(new \PDOException($exception->getMessage(), 0, $exception));
-			}
-		}
-		return ($profiles);
 	}
 	/**
 	 * Formats the state variables for JSON serialization.

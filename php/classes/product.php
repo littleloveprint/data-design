@@ -29,7 +29,7 @@ class Product implements \JsonSerializable {
 	private $productDescription;
 	/**
 	 * Cost of the product.
-	 * @var int $productPrice
+	 * @var float $productPrice
 	 **/
 	private $productPrice;
 	/**
@@ -157,7 +157,7 @@ class Product implements \JsonSerializable {
 	/**
 	 * Mutator method for product price.
 	 *
-	 * @param int|null $newProductPrice new value of product price
+	 * @param float $newProductPrice new value of product price
 	 * @throws \RangeException if $newProductPrice is not positive
 	 * @throws \TypeError if $newProductPrice is not an integer
 	 **/
@@ -174,7 +174,7 @@ class Product implements \JsonSerializable {
 			throw(new \RangeException("product price is not positive"));
 		}
 		// Convert and store the product price.
-		$this->productIPrice = $newProductPrice;
+		$this->productPrice = $newProductPrice;
 		}
 		//
 
@@ -335,8 +335,6 @@ class Product implements \JsonSerializable {
 				if($row !== false) {
 					$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPrice"], $row["productPostDate"]);
 				}
-				$products[$products->key()] = $product;
-				$products->next();
 			} catch(\Exception $exception) {
 				// If the row couldn't be converted, rethrow it.
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
@@ -382,12 +380,12 @@ class Product implements \JsonSerializable {
 	 * Gets the Product by product price.
 	 *
 	 * @param \PDO $pdo PDO connection object
-	 * @param int $productPrice to search by product price
+	 * @param float $productPrice to search by product price
 	 * @return \SplFixedArray SplFixedArray of Product Prices found
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
-	public static function getProductByProductPrice(\PDO $pdo, int $productPrice) : \SplFixedArray {
+	public static function getProductByProductPrice(\PDO $pdo, float $productPrice) : \SplFixedArray {
 		// Ensure product price is valid.
 		if($productPrice <= 0) {
 			throw(new \RangeException("product price must be positive"));
