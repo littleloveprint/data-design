@@ -268,12 +268,7 @@ class Profile implements \JsonSerializable {
 		$statement = $pdo->prepare($query);
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->profileJoinDate->format("Y-m-d H:i:s.u");
-		$parameters = [
-			"profileUserName" => $this->profileUserName,
-			"profileLocation" => $this->profileLocation,
-			"profileJoinDate" => $formattedDate,
-			"profileHash" => $this->profileHash,
-			"profileSalt" => $this->profileSalt];
+		$parameters = ["profileUserName" => $this->profileUserName, "profileLocation" => $this->profileLocation, "profileJoinDate" => $formattedDate, "profileHash" => $this->profileHash, "profileSalt" => $this->profileSalt];
 		$statement->execute($parameters);
 		// Update the null profileId with what mySQL just gave us.
 		$this->profileId = intval($pdo->lastInsertId());

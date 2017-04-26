@@ -164,7 +164,6 @@ class Product implements \JsonSerializable {
 	public function setProductPrice(float $newProductPrice): void {
 		//If product price is null immediately return it.
 		$newProductPrice = filter_var($newProductPrice, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-
 		if($newProductPrice === null) {
 			$this->productPrice = null;
 			return;
@@ -175,9 +174,8 @@ class Product implements \JsonSerializable {
 		}
 		// Convert and store the product price.
 		$this->productPrice = $newProductPrice;
-		}
-		//
-
+	}
+	//
 	/**
 	 * Accessor method for product post date
 	 *
@@ -303,105 +301,70 @@ class Product implements \JsonSerializable {
 			} catch(\Exception $exception) {
 				// If the row couldn't be converted, rethrow it.
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
-				}
 			}
-			return($products);
 		}
-		/**
-		 * Gets the Product by productId.
-		 *
-		 * @param \PDO $pdo PDO connection object
-		 * @param int $productId product id to search for
-		 * @return Product|null Product found or null if not found
-		 * @throws \PDOException when mySQL errors occur
-		 * @throws \TypeError when variables are not the correct data type
-		 **/
-		public static function getProductByProductId(\PDO $pdo, int $productId) : ?Product {
-			// Sanitize the productId before searching.
-			if($productId <= 0) {
-				throw(new \PDOException("product id is not positive"));
-			}
-			// Create query template.
-			$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productId = :productId";
-			$statement = $pdo->prepare($query);
-			// Bind the product id to the place holder in the template.
-			$parameters = ["productId" => $productId];
-			$statement->execute($parameters);
-			// Grab the product from mySQL
-			try {
-				$product = null;
-				$statement->setFetchMode(\PDO::FETCH_ASSOC);
-				$row = $statement->fetch();
-				if($row !== false) {
-					$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPrice"], $row["productPostDate"]);
-				}
-			} catch(\Exception $exception) {
-				// If the row couldn't be converted, rethrow it.
-				throw(new \PDOException($exception->getMessage(), 0, $exception));
-			}
-			return ($product);
-		}
-		/**
-		 * Gets the Product by profile id
-		 *
-		 * @param \PDO $pdo PDO connection object
-		 * @param int $productProfileId profile id to search by
-		 * @return \SplFixedArray SplFixedArray of Products found
-		 * @throws \PDOException when mySQL related errors occur
-		 * @throws \TypeError when variables are not the correct data type
-		 **/
-		public static function getProductByProductProfileId(\PDO $pdo, int $productProfileId) : \SplFixedArray {
-			// Sanitize the profile id before searching
-			if($productProfileId <= 0) {
-				throw(new \RangeException("product profile id must be positive"));
-			}
-			// Create query template
-			$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productProfileId = :productProfileId";
-			$statement = $pdo->prepare($query);
-			// Bind the product profile id to the place holder in the template.
-			$parameters = ["productProfileId" => $productProfileId];
-			$statement->execute($parameters);
-			// Build an array of products.
-			$products = new \SplFixedArray($statement->rowCount());
-			$statement->setFetchMode(\PDO::FETCH_ASSOC);
-			while(($row = $statement->fetch()) !== false) {
-				try {
-					$product = new Product($row["productId"], $row["productProfileId	"], $row["productContent"], $row["productPostDate"]);
-					$products[$products->key()] = $product;
-					$products->next();
-				} catch(\Exception $exception) {
-					// If the row couldn't be converted, rethrow it.
-					throw (new \PDOException($exception->getMessage(), 0, $exception));
-				}
-			}
-			return($products);
-		}
+		return($products);
+	}
 	/**
-	 * Gets the Product by product price.
+	 * Gets the Product by productId.
 	 *
 	 * @param \PDO $pdo PDO connection object
-	 * @param float $productPrice to search by product price
-	 * @return \SplFixedArray SplFixedArray of Product Prices found
+	 * @param int $productId product id to search for
+	 * @return Product|null Product found or null if not found
+	 * @throws \PDOException when mySQL errors occur
+	 * @throws \TypeError when variables are not the correct data type
+	 **/
+	public static function getProductByProductId(\PDO $pdo, int $productId) : ?Product {
+		// Sanitize the productId before searching.
+		if($productId <= 0) {
+			throw(new \PDOException("product id is not positive"));
+		}
+		// Create query template.
+		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productId = :productId";
+		$statement = $pdo->prepare($query);
+		// Bind the product id to the place holder in the template.
+		$parameters = ["productId" => $productId];
+		$statement->execute($parameters);
+		// Grab the product from mySQL
+		try {
+			$product = null;
+			$statement->setFetchMode(\PDO::FETCH_ASSOC);
+			$row = $statement->fetch();
+			if($row !== false) {
+				$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPrice"], $row["productPostDate"]);
+			}
+		} catch(\Exception $exception) {
+			// If the row couldn't be converted, rethrow it.
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		return ($product);
+	}
+	/**
+	 * Gets the Product by profile id
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @param int $productProfileId profile id to search by
+	 * @return \SplFixedArray SplFixedArray of Products found
 	 * @throws \PDOException when mySQL related errors occur
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
-	public static function getProductByProductPrice(\PDO $pdo, float $productPrice) : \SplFixedArray {
-		// Ensure product price is valid.
-		if($productPrice <= 0) {
-			throw(new \RangeException("product price must be positive"));
+	public static function getProductByProductProfileId(\PDO $pdo, int $productProfileId) : \SplFixedArray {
+		// Sanitize the profile id before searching
+		if($productProfileId <= 0) {
+			throw(new \RangeException("product profile id must be positive"));
 		}
 		// Create query template
-		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productPrice = :productPrice";
+		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productProfileId = :productProfileId";
 		$statement = $pdo->prepare($query);
-		// Bind the product price to the place holder in the template.
-		$parameters = ["productPrice" => $productPrice];
+		// Bind the product profile id to the place holder in the template.
+		$parameters = ["productProfileId" => $productProfileId];
 		$statement->execute($parameters);
-		// Build an array of product prices.
+		// Build an array of products.
 		$products = new \SplFixedArray($statement->rowCount());
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
 		while(($row = $statement->fetch()) !== false) {
 			try {
-				$product = new Product($row["productId"], $row["productProfileId	"], $row["productContent"], $row["productPrice"], $row["productPostDate"]);
+				$product = new Product($row["productId"], $row["productProfileId	"], $row["productContent"], $row["productPostDate"]);
 				$products[$products->key()] = $product;
 				$products->next();
 			} catch(\Exception $exception) {
@@ -411,43 +374,80 @@ class Product implements \JsonSerializable {
 		}
 		return($products);
 	}
-		/**
-		 * Gets all Products
-		 *
-		 * @param \PDO $pdo PDO connection object
-		 * @return \SplFixedArray SplFixedArray of Products found or null if not found
-		 * @throws \PDOException when mySQL related errors occur
-		 * @throws \TypeError when variables are not the correct data type
-		 **/
-		public static function getAllProducts(\PDO $pdo) : \SplFixedArray {
-			// create query template
-			$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product";
-			$statement = $pdo->prepare($query);
-			$statement->execute();
-			// build an array of tweets
-			$products = new \SplFixedArray($statement->rowCount());
-			$statement->setFetchMode(\PDO::FETCH_ASSOC);
-			while(($row = $statement->fetch()) !== false) {
-				try {
-					$product = new Product($row["productId"], $row["productProfileId"], $row["productContent"], $row["productPostDate"]);
-					$products[$products->key()] = $product;
-					$products->next();
-				} catch(\Exception $exception) {
-					// If the row couldn't be converted, rethrow it.
-					throw(new \PDOException($exception->getMessage(), 0, $exception));
-				}
+	/**
+	 * Gets the Product by product price.
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @param float $productPrice to search by product price
+	 * @param float $productPriceLow Lower product price to search for
+	 * @param float $productPriceHigh Higher product price to search for
+	 * @return \SplFixedArray SplFixedArray of Products found
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError when variables are not the correct data type
+	 **/
+	public static function getProductByProductPrice(\PDO $pdo, float $productPrice, float $productPriceLow, float $productPriceHigh) {
+		// Ensure product price is valid.
+		if($productPrice <= 0) {
+			throw(new \RangeException("product price must be positive"));
+		}
+		// Create query template
+		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productPrice >= :productPriceLow AND productPrice <= :productPriceHigh";
+		$statement = $pdo->prepare($query);
+		// Bind the product price to the place holder in the template.
+		$parameters = ["productPriceLow" => $productPriceLow, "productPriceHigh" => $productPriceHigh];
+		$statement->execute($parameters);
+		// Build an array of product prices.
+		$products = new \SplFixedArray($statement->rowCount());
+		$statement->setFetchMode(\PDO::FETCH_ASSOC);
+		while(($row = $statement->fetch()) !== false) {
+			try {
+				$productPrice = new Product($row["productId"], $row["productProfileId	"], $row["productDescription"], $row["productPrice"], $row["productPostDate"]);
+				$products[$products->key()] = $productPrice;
+				$products->next();
+			} catch(\Exception $exception) {
+				// If the row couldn't be converted, rethrow it.
+				throw (new \PDOException($exception->getMessage(), 0, $exception));
 			}
-			return ($products);
 		}
-		/**
-		 * Formats the state variables for JSON serialization.
-		 *
-		 * @return array resulting state variables to serialize
-		 **/
-		public function jsonSerialize() {
-			$fields = get_object_vars($this);
-			//Format the date so that the front end can consume it.
-			$fields["productPostDate"] = round(floatval($this->productPostDate->format("U.u")) * 1000);
-			return($fields);
-		}
+		return($products);
 	}
+	/**
+	 * Gets all Products
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @return \SplFixedArray SplFixedArray of Products found or null if not found
+	 * @throws \PDOException when mySQL related errors occur
+	 * @throws \TypeError when variables are not the correct data type
+	 **/
+	public static function getAllProducts(\PDO $pdo) : \SplFixedArray {
+		// create query template
+		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product";
+		$statement = $pdo->prepare($query);
+		$statement->execute();
+		// build an array of tweets
+		$products = new \SplFixedArray($statement->rowCount());
+		$statement->setFetchMode(\PDO::FETCH_ASSOC);
+		while(($row = $statement->fetch()) !== false) {
+			try {
+				$product = new Product($row["productId"], $row["productProfileId"], $row["productContent"], $row["productPostDate"]);
+				$products[$products->key()] = $product;
+				$products->next();
+			} catch(\Exception $exception) {
+				// If the row couldn't be converted, rethrow it.
+				throw(new \PDOException($exception->getMessage(), 0, $exception));
+			}
+		}
+		return ($products);
+	}
+	/**
+	 * Formats the state variables for JSON serialization.
+	 *
+	 * @return array resulting state variables to serialize
+	 **/
+	public function jsonSerialize() {
+		$fields = get_object_vars($this);
+		//Format the date so that the front end can consume it.
+		$fields["productPostDate"] = round(floatval($this->productPostDate->format("U.u")) * 1000);
+		return($fields);
+	}
+}
