@@ -9,7 +9,7 @@ use Edu\Cnm\DataDesign\ {
 /**
  * API for Profile
  *
- * @author Lea McDUffie littleloveprint
+ * @author Lea McDuffie
  * @version 1.0
  */
 
@@ -25,6 +25,8 @@ try {
 
 	// Grab the mySQL connection
 	$pdo = connectToEncryptedMySQL(".ini file goes here, Lea!");
+
+	$_SESSION["profile"] = Profile::getProfileByProfileId($pdo, 729);
 
 	// Determine which HTTP method was used
 	$method = array_key_exists("HTTP_X_HTTP_METHOD", $_SERVER) ? $_SERVER["HTTP_X_HTTP_METHOD"] : $_SERVER["REQUEST_METHOD"];
