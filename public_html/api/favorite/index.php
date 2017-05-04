@@ -24,7 +24,7 @@ $reply = new stdClass();
 $reply->status = 200;
 $reply->data = null;
 try {
-	$pdo = connectToEncryptedMySQL(".ini file");
+	$pdo = connectToEncryptedMySQL("path .ini");
 
 	// Mock a logged in user by mocking the session and assigning a specific user to it.
 	// This is only for testing purposes and should not be in the live code.

@@ -24,7 +24,7 @@ $reply->data = null;
 try {
 
 	// Grab the mySQL connection
-	$pdo = connectToEncryptedMySQL(".ini file goes here, Lea!");
+	$pdo = connectToEncryptedMySQL("path .ini here, Lea");
 
 	$_SESSION["profile"] = Profile::getProfileByProfileId($pdo, 729);
 

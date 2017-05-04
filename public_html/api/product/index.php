@@ -28,7 +28,7 @@ $reply->data = null;
 try {
 
 	// Grab the mySQL connection
-	$pdo = connectToEncryptedMySQL(".ini file");
+	$pdo = connectToEncryptedMySQL(" path .ini");
 
 	// Mock a logged in user by mocking the session and assigning a specific user to it.
 	// This is only for testing purposes and should not be in the live code.
