@@ -59,12 +59,14 @@ class Product implements \JsonSerializable {
 			$this->setProductPrice($newProductPrice);
 			$this->setProductPostDate($newProductPostDate);
 		}
+
 			//determine what exception type was thrown
 		catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
 			$exceptionType = get_class($exception);
 			throw(new $exceptionType($exception->getMessage(), 0, $exception));
 		}
 	}
+
 	/**
 	 * Accessor method for product id.
 	 *
@@ -73,6 +75,7 @@ class Product implements \JsonSerializable {
 	public function getProductId(): ?int {
 		return ($this->productId);
 	}
+
 	/**
 	 * Mutator method for product id.
 	 *
@@ -81,18 +84,22 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError if $newProductId is not an integer
 	 **/
 	public function setProductId(?int $newProductId): void {
+
 		//If product id is null immediately return it.
 		if($newProductId === null) {
 			$this->productId = null;
 			return;
 		}
+
 		// Verify the product id is positive.
 		if($newProductId <= 0) {
 			throw(new \RangeException("product id is not positive"));
 		}
+
 		// Convert and store the product id.
 		$this->productId = $newProductId;
 	}
+
 	/**
 	 * Accessor method for product profile id.
 	 *
@@ -101,6 +108,7 @@ class Product implements \JsonSerializable {
 	public function getProductProfileId(): int {
 		return ($this->productProfileId);
 	}
+
 	/**
 	 * Mutator method for product profile id.
 	 *
@@ -109,13 +117,16 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError if $newProfileId is not an integer
 	 **/
 	public function setProductProfileId(int $newProductProfileId): void {
+
 		// Verify the profile id is positive.
 		if($newProductProfileId <= 0) {
 			throw(new \RangeException("product profile id is not positive"));
 		}
+
 		// Convert and store the profile id
 		$this->productProfileId = $newProductProfileId;
 	}
+
 	/**
 	 * Accessor method for product description.
 	 *
@@ -124,6 +135,7 @@ class Product implements \JsonSerializable {
 	public function getProductDescription(): string {
 		return ($this->productDescription);
 	}
+
 	/**
 	 * Mutator method for product description.
 	 *
@@ -133,19 +145,23 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError if $newProductDescription is not a string
 	 **/
 	public function setProductDescription(string $newProductDescription): void {
+
 		// Verify the product description is secure.
 		$newProductDescription = trim($newProductDescription);
 		$newProductDescription = filter_var($newProductDescription, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 		if(empty($newProductDescription) === true) {
 			throw(new \InvalidArgumentException("product content is empty or insecure"));
 		}
+
 		// Verify the product description will fit in the database.
 		if(strlen($newProductDescription) < 1000) {
 			throw(new \RangeException("product description too large"));
 		}
+
 		// Store the product description.
 		$this->productDescription = $newProductDescription;
 	}
+
 	/**
 	 * Accessor method for product price.
 	 *
@@ -154,6 +170,7 @@ class Product implements \JsonSerializable {
 	public function getProductPrice() : float {
 		return($this->productPrice);
 	}
+
 	/**
 	 * Mutator method for product price.
 	 *
@@ -162,19 +179,23 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError if $newProductPrice is not an integer
 	 **/
 	public function setProductPrice(float $newProductPrice): void {
+
 		//If product price is null immediately return it.
 		$newProductPrice = filter_var($newProductPrice, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
 		if($newProductPrice === null) {
 			$this->productPrice = null;
 			return;
 		}
+
 		// Verify the product price is positive.
 		if($newProductPrice <= 0) {
 			throw(new \RangeException("product price is not positive"));
 		}
+
 		// Convert and store the product price.
 		$this->productPrice = $newProductPrice;
 	}
+
 	//
 	/**
 	 * Accessor method for product post date
@@ -184,6 +205,7 @@ class Product implements \JsonSerializable {
 	public function getProductPostDate(): \DateTime {
 		return ($this->productPostDate);
 	}
+
 	/**
 	 * Mutator method for product post date.
 	 *
@@ -192,11 +214,13 @@ class Product implements \JsonSerializable {
 	 * @throws \RangeException if $newProductPostDate is a date that does not exist
 	 **/
 	public function setProductPostDate($newProductPostDate = null): void {
-		// Base case: if the date is nul, use the current date and time
+
+		// Base case: if the date is null, use the current date and time
 		if($newProductPostDate === null) {
 			$this->productPostDate = new \DateTime();
 			return;
 		}
+
 		// Store the product post date using the ValidateDate trait.
 		try {
 			$newProductPostDate = self::validateDateTime($newProductPostDate);
@@ -206,6 +230,7 @@ class Product implements \JsonSerializable {
 		}
 		$this->productPostDate = $newProductPostDate;
 	}
+
 	/**
 	 * Inserts this product into mySQL.
 	 *
@@ -214,20 +239,25 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError is $pdo is not a PDO connection object
 	 **/
 	public function insert(\PDO $pdo): void {
+
 		// Enforce the productId is null (i.e., don't insert a product that already exists).
 		if($this->productId !== null) {
 			throw(new \PDOException("product already exists"));
 		}
+
 		// Create query template
 		$query = "INSERT INTO product(productProfileId, productDescription, productPrice, productPostDate) VALUES(:productProfileId, :productDescription, :productPrice, :productPostDate)";
 		$statement = $pdo->prepare($query);
+
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s.u");
 		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productDescription, "productPrice" => $this->productPrice, "productPostDate" => $formattedDate];
 		$statement->execute($parameters);
+
 		// Update the null productId with what mySQL just gave us.
 		$this->productId = intval($pdo->lastInsertId());
 	}
+
 	/**
 	 * Deletes this product from mySQL
 	 *
@@ -236,17 +266,21 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError if $pdo is not a PDO connection object
 	 **/
 	public function delete(\PDO $pdo) : void {
+
 		// Enforce the productId is not null (i.e. don't delete a product that hasn't been inserted).
 		if($this->productId === null) {
 			throw(new \PDOException("unable to delete a product that doesn't exist"));
 		}
+
 		// Create query template.
 		$query = "DELETE FROM product WHERE productId = :productId";
 		$statement = $pdo->prepare($query);
+
 		// Bind the member variables to the place holder in the template.
 		$parameters = ["productId" => $this->productId];
 		$statement->execute($parameters);
 	}
+
 	/**
 	 * Updates this product in mySQL.
 	 *
@@ -255,18 +289,22 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError if $pdo is not a PDO connection object
 	 **/
 	public function update(\PDO $pdo) : void {
+
 		// Enforce the productId is not null (i.e. don't update a product that hasn't been inserted).
 		if($this->productId === null) {
 			throw(new \PDOException("unable to update a product that does not exist"));
 		}
+
 		// Create query template.
 		$query = "UPDATE product SET productProfileId = :productProfileId, productDescription = :productDescription, productPrice = :productPrice, productPostDate = :productPostDate WHERE productId = :productId";
 		$statement = $pdo->prepare($query);
+
 		// Bind the member variables to the place holders in the template.
 		$formattedDate = $this->productPostDate->format("Y-m-d H:i:s.u");
 		$parameters = ["productProfileId" => $this->productProfileId, "productDescription" => $this->productDescription, "productPrice" => $this->productPrice, "productPostDate" => $formattedDate];
 		$statement->execute($parameters);
 	}
+
 	/**
 	 * Gets the product by description.
 	 *
@@ -277,19 +315,23 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
 	public static function getProductByProductDescription(\PDO $pdo, string $productDescription) {
+
 		// Sanatize the description before searching
 		$productDescription = trim($productDescription);
 		$productDescription = filter_var($productDescription, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 		if(empty($productDescription) === true) {
 			throw(new \PDOException("product description invalid"));
 		}
+
 		// Create query template.
 		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productDescription LIKE :productDescription";
 		$statement = $pdo->prepare($query);
+
 		// Bind the product description to the place holder in the template.
 		$productDescription = "%productDescription%";
 		$parameters = ["productDescription" => $productDescription];
 		$statement->execute($parameters);
+
 		// Build an array of products.
 		$products = new \SplFixedArray($statement->rowCount());
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
@@ -299,12 +341,14 @@ class Product implements \JsonSerializable {
 				$products[$products->key()] = $product;
 				$products->next();
 			} catch(\Exception $exception) {
+
 				// If the row couldn't be converted, rethrow it.
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
 			}
 		}
 		return($products);
 	}
+
 	/**
 	 * Gets the Product by productId.
 	 *
@@ -315,16 +359,20 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
 	public static function getProductByProductId(\PDO $pdo, int $productId) : ?Product {
+
 		// Sanitize the productId before searching.
 		if($productId <= 0) {
 			throw(new \PDOException("product id is not positive"));
 		}
+
 		// Create query template.
 		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productId = :productId";
 		$statement = $pdo->prepare($query);
+
 		// Bind the product id to the place holder in the template.
 		$parameters = ["productId" => $productId];
 		$statement->execute($parameters);
+
 		// Grab the product from mySQL
 		try {
 			$product = null;
@@ -334,11 +382,13 @@ class Product implements \JsonSerializable {
 				$product = new Product($row["productId"], $row["productProfileId"], $row["productDescription"], $row["productPrice"], $row["productPostDate"]);
 			}
 		} catch(\Exception $exception) {
+
 			// If the row couldn't be converted, rethrow it.
 			throw(new \PDOException($exception->getMessage(), 0, $exception));
 		}
 		return ($product);
 	}
+
 	/**
 	 * Gets the Product by profile id
 	 *
@@ -349,16 +399,20 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
 	public static function getProductByProductProfileId(\PDO $pdo, int $productProfileId) : \SplFixedArray {
+
 		// Sanitize the profile id before searching
 		if($productProfileId <= 0) {
 			throw(new \RangeException("product profile id must be positive"));
 		}
+
 		// Create query template
 		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productProfileId = :productProfileId";
 		$statement = $pdo->prepare($query);
+
 		// Bind the product profile id to the place holder in the template.
 		$parameters = ["productProfileId" => $productProfileId];
 		$statement->execute($parameters);
+
 		// Build an array of products.
 		$products = new \SplFixedArray($statement->rowCount());
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
@@ -368,12 +422,14 @@ class Product implements \JsonSerializable {
 				$products[$products->key()] = $product;
 				$products->next();
 			} catch(\Exception $exception) {
+
 				// If the row couldn't be converted, rethrow it.
 				throw (new \PDOException($exception->getMessage(), 0, $exception));
 			}
 		}
 		return($products);
 	}
+
 	/**
 	 * Gets the Product by product price.
 	 *
@@ -386,16 +442,20 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
 	public static function getProductByProductPrice(\PDO $pdo, float $productPrice, float $productPriceLow, float $productPriceHigh) {
+
 		// Ensure product price is valid.
 		if($productPrice <= 0) {
 			throw(new \RangeException("product price must be positive"));
 		}
+
 		// Create query template
 		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product WHERE productPrice >= :productPriceLow AND productPrice <= :productPriceHigh";
 		$statement = $pdo->prepare($query);
+
 		// Bind the product price to the place holder in the template.
 		$parameters = ["productPriceLow" => $productPriceLow, "productPriceHigh" => $productPriceHigh];
 		$statement->execute($parameters);
+
 		// Build an array of product prices.
 		$products = new \SplFixedArray($statement->rowCount());
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
@@ -405,12 +465,14 @@ class Product implements \JsonSerializable {
 				$products[$products->key()] = $productPrice;
 				$products->next();
 			} catch(\Exception $exception) {
+
 				// If the row couldn't be converted, rethrow it.
 				throw (new \PDOException($exception->getMessage(), 0, $exception));
 			}
 		}
 		return($products);
 	}
+
 	/**
 	 * Gets all Products
 	 *
@@ -420,10 +482,12 @@ class Product implements \JsonSerializable {
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
 	public static function getAllProducts(\PDO $pdo) : \SplFixedArray {
+
 		// create query template
 		$query = "SELECT productId, productProfileId, productDescription, productPrice, productPostDate FROM product";
 		$statement = $pdo->prepare($query);
 		$statement->execute();
+
 		// build an array of tweets
 		$products = new \SplFixedArray($statement->rowCount());
 		$statement->setFetchMode(\PDO::FETCH_ASSOC);
@@ -433,12 +497,14 @@ class Product implements \JsonSerializable {
 				$products[$products->key()] = $product;
 				$products->next();
 			} catch(\Exception $exception) {
+
 				// If the row couldn't be converted, rethrow it.
 				throw(new \PDOException($exception->getMessage(), 0, $exception));
 			}
 		}
 		return ($products);
 	}
+
 	/**
 	 * Formats the state variables for JSON serialization.
 	 *
@@ -446,6 +512,7 @@ class Product implements \JsonSerializable {
 	 **/
 	public function jsonSerialize() {
 		$fields = get_object_vars($this);
+
 		//Format the date so that the front end can consume it.
 		$fields["productPostDate"] = round(floatval($this->productPostDate->format("U.u")) * 1000);
 		return($fields);
