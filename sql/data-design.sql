@@ -31,7 +31,7 @@ CREATE TABLE product (
 		FOREIGN KEY(productProfileId) REFERENCES profile(profileId),
 	-- ^ This creates the actual foreign key relation.
 		PRIMARY KEY(productId)
-		-- ^ This creates the primary key.
+	-- ^ This creates the primary key.
 );
 
 -- The favorite entity.
